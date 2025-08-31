@@ -258,10 +258,26 @@ export default function ChatComposer() {
       // Mocked metadata envelope parser (feature-flagged)
       const parser = createEnvelopeParser((m) => {
         try {
-          // Capture ethics metadata for the assistant message
+          // Capture ethics/confidence metadata for the assistant message and broadcast
           const anyM: any = m as any;
-          if (anyM && anyM.ethics) {
-            assistantMetaRef.current = { ...(assistantMetaRef.current || {}), ethics: anyM.ethics };
+          if (anyM) {
+            // Keep for message meta
+            const ethics = anyM.ethics;
+            const confidence = typeof anyM.confidence === 'number' ? anyM.confidence : undefined;
+            const uncertainty = typeof anyM.uncertainty === 'number' ? anyM.uncertainty : undefined;
+            assistantMetaRef.current = { ...(assistantMetaRef.current || {}), ethics, confidence, uncertainty };
+            // Submit to Global Broadcast arbiter
+            try {
+              const { submitCandidate } = require('@/lib/globalBroadcast');
+              submitCandidate({
+                id: `chat:${Date.now()}`,
+                source: 'chat',
+                confidence,
+                uncertainty,
+                ethicsDecision: ethics?.decision,
+                summary: typeof anyM.reasoning === 'string' ? anyM.reasoning : undefined,
+              });
+            } catch {}
           }
         } catch {}
         if (!autoOpenEnabled) return;

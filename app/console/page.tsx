@@ -20,7 +20,7 @@ interface AuditEntry {
 }
 
 export default function ConsolePage() {
-  const API_URL = process.env.NEXT_PUBLIC_API_BASE || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const API_URL = "";
   const { model, setModel, options } = useModel();
 
   const [filters, setFilters] = useState({
@@ -160,7 +160,7 @@ export default function ConsolePage() {
     try {
       const trace = (typeof crypto !== 'undefined' && 'randomUUID' in crypto) ? (crypto as any).randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const start = Date.now();
-      const res = await fetch(`${API_URL}/audit/query?${params.toString()}` , { headers: { 'X-Model': model, 'X-Request-Id': trace, 'X-Client-App': 'console' } });
+      const res = await fetch(`/api/audit/query?${params.toString()}` , { headers: { 'X-Model': model, 'X-Request-Id': trace, 'X-Client-App': 'console' } });
       const json = await res.json();
       setData({ total: json.total || 0, entries: json.entries || [] });
       // Update right panel summary/json
@@ -175,7 +175,7 @@ export default function ConsolePage() {
         const costUsd = Number(h.get('x-llm-cost-usd'));
         const respModel = h.get('x-llm-model') || h.get('x-model') || '';
         const clientLatency = Date.now() - start;
-        const detail = { trace, url: `${API_URL}/audit/query`, ok: res.ok, status: res.status, clientLatencyMs: clientLatency, serverLatencyMs: Number.isFinite(serverLatency) ? serverLatency : null, costUsd: Number.isFinite(costUsd) ? costUsd : null, requestModel: model, responseModel: respModel, app: 'console' };
+        const detail = { trace, url: `/api/audit/query`, ok: res.ok, status: res.status, clientLatencyMs: clientLatency, serverLatencyMs: Number.isFinite(serverLatency) ? serverLatency : null, costUsd: Number.isFinite(costUsd) ? costUsd : null, requestModel: model, responseModel: respModel, app: 'console' };
         window.dispatchEvent(new CustomEvent('telemetry:request', { detail }));
       } catch {}
     } catch (e) {

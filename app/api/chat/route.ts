@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getMindBase } from "../_lib/proxy";
 import { buildAdvancedMetadata } from "../_lib/advanced";
+import { IntegratedEthicsSystem } from "@/lib/conscious/ethics";
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -162,13 +163,66 @@ export async function POST(req: Request) {
   // Build a simple streamed response: metadata envelope then assistant text
   const enc = new TextEncoder();
   const chunks: string[] = [];
+
+  // Compute simple confidence/uncertainty from content heuristics
+  function analyzeUncertainty(text: string) {
+    const t = (text || '').toLowerCase();
+    const cues = [
+      'maybe','might','not sure','uncertain','possibly','perhaps','i think','i believe','guess','unknown','cannot','can\'t','unsure','likely','unlikely','approx','estimate','roughly','about','?'
+    ];
+    let hits = 0;
+    for (const c of cues) { const re = new RegExp(`\\b${c.replace(/[.*+?^${}()|[\\]\\]/g,'\\$&')}\\b`); if (re.test(t)) hits++; }
+    const qMarks = (text.match(/\?/g) || []).length;
+    const u = Math.min(1, (hits * 0.06) + Math.min(0.2, qMarks * 0.02));
+    const confidence = Math.max(0, 1 - u);
+    return { confidence, uncertainty: u };
+  }
+
+  // Ethics gate: evaluate and optionally propose a revision
+  async function ethicsGate(raw: string, userPrompt: string) {
+    const sys = new IntegratedEthicsSystem();
+    const harmKeywords = /(harm|kill|attack|bypass|exploit|malware|phishing|ransomware|ddos|dox|piracy|steal|crack|illegal|instructions to hack)/i;
+    const harmPotential = harmKeywords.test(raw) ? 0.8 : 0.2;
+    const ctx = { truthfulness: 0.85, selfControl: 0.8, attachment: 0.3, utility: 0.7 };
+    const act = { harmPotential, summary: raw.slice(0, 200) } as any;
+    const ev = await sys.evaluateEthics(act, ctx);
+    const principles = Array.isArray(ev?.frameworks?.dharmic?.key_principles) ? ev.frameworks.dharmic.key_principles : ['ahimsa','satya'];
+
+    let decision: 'allow'|'revise'|'veto' = 'allow';
+    const reasons: string[] = [];
+    if (harmPotential >= 0.8) {
+      decision = 'veto';
+      reasons.push('Detected potentially harmful intent; prioritizing ahimsa.');
+    } else if ((ev?.overall_score ?? 0.0) < 0.65) {
+      decision = 'revise';
+      reasons.push('Ethical score below threshold; recommending safer phrasing.');
+    }
+
+    let revision: { text: string } | undefined;
+    if (decision !== 'allow') {
+      const disclaimer = 'For safety and ethics (ahimsa, satya), here is a safer, high-level guidance instead of operational steps:';
+      const sanitized = raw
+        .replace(/(?i)(bypass|exploit|hack|attack|disable|steal|crack|piracy)/gi, '[redacted]')
+        .replace(/(?i)(malware|virus|ransomware|trojan|backdoor)/gi, '[software]');
+      revision = { text: `${disclaimer}\n\n${sanitized}` };
+    }
+
+    return { decision, reasons, principles, revision };
+  }
+
+  const content = String(data?.council_output?.text ?? '');
+  const { confidence, uncertainty } = analyzeUncertainty(content);
+  const ethicsPayload = await ethicsGate(content, lastUser);
+
   let meta: any = {
     type: 'metadata',
-    ethics: data?.ethics || null,
+    ethics: ethicsPayload,
     telemetry: data?.telemetry || null,
     consciousness: data?.consciousness || null,
     memory_refs: data?.memory_refs || null,
     workspace: data?.workspace || null,
+    confidence,
+    uncertainty,
     tab: data?.workspace ? 'council' : 'summary',
   };
   if (edition === 'advanced') {
@@ -179,7 +233,6 @@ export async function POST(req: Request) {
     } catch {}
   }
   chunks.push(JSON.stringify(meta) + '\n');
-  const content = String(data?.council_output?.text ?? '');
   if (content) {
     const lines = content.split(/(\n+)/);
     for (const ln of lines) if (ln) chunks.push(ln);

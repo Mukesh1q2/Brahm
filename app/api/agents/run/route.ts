@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { insertDiarySafe } from "@/app/api/_lib/pg";
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,8 @@ export async function POST(req: NextRequest) {
       "x-llm-cost-usd": "0.0010",
       "x-server-latency-ms": String(Math.floor(Math.random() * 40) + 10),
     });
+    // Best-effort memory diary write
+    try { await insertDiarySafe({ role: 'system', text: `Agent run: ${goal} → ${summary?.result || summary?.summary || ''}` , ts: Date.now() }); } catch {}
     return new NextResponse(JSON.stringify({ runId: summary.runId, summary, transcript, diff }), { status: 200, headers });
   } catch (e: any) {
     return NextResponse.json({ detail: e?.message || "bad request" }, { status: 400 });

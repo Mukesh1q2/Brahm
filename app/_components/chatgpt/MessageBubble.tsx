@@ -13,6 +13,8 @@ export default function MessageBubble({ msg }: { msg: Message }) {
   const [savingSem, setSavingSem] = React.useState(false);
   const [saveSemMsg, setSaveSemMsg] = React.useState<string>("");
   const { deleteMessage, pushMessage, replaceLastAssistant } = useChatStore();
+  const conf = typeof (msg.meta as any)?.confidence === 'number' ? (msg.meta as any).confidence as number : undefined;
+  const unc = typeof (msg.meta as any)?.uncertainty === 'number' ? (msg.meta as any).uncertainty as number : undefined;
 
   async function onCopy() {
     try { await navigator.clipboard.writeText(msg.content); } catch {}
@@ -83,15 +85,24 @@ export default function MessageBubble({ msg }: { msg: Message }) {
       <div className={`max-w-[80%] rounded-2xl px-4 py-3 shadow border ${
         isUser ? "bg-[var(--panel-bg)] border-[var(--panel-border)]" : "bg-[var(--panel-bg)] border-[var(--panel-border)]"
       }`}>
-        {/* Ethics chip */}
-        {!isUser && ethics && (
+        {/* Confidence/Ethics chips */}
+        {!isUser && (ethics || (conf != null && unc != null)) && (
           <div className="mb-2 flex items-center gap-2 text-[11px]">
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border ${ethics.decision === 'allow' ? 'bg-green-900/30 border-green-700 text-green-300' : ethics.decision === 'revise' ? 'bg-amber-900/30 border-amber-700 text-amber-300' : 'bg-red-900/30 border-red-700 text-red-300'}`}>
-              {ethics.decision === 'allow' ? 'Ethics: allow' : ethics.decision === 'revise' ? 'Ethics: revise' : 'Ethics: veto'}
-            </span>
-            <button className="hover:underline opacity-80" onClick={()=>setShowEthics(s=>!s)}>
-              {showEthics ? <span className="inline-flex items-center gap-1">Hide reasoning <ChevronUp className="w-3 h-3" /></span> : <span className="inline-flex items-center gap-1">View reasoning <ChevronDown className="w-3 h-3" /></span>}
-            </button>
+            {conf != null && unc != null && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border bg-white/5 border-white/10 text-gray-200">
+                Conf: {(conf).toFixed(2)} • Unc: {(unc).toFixed(2)}
+              </span>
+            )}
+            {ethics && (
+              <>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border ${ethics.decision === 'allow' ? 'bg-green-900/30 border-green-700 text-green-300' : ethics.decision === 'revise' ? 'bg-amber-900/30 border-amber-700 text-amber-300' : 'bg-red-900/30 border-red-700 text-red-300'}`}>
+                  {ethics.decision === 'allow' ? 'Ethics: allow' : ethics.decision === 'revise' ? 'Ethics: revise' : 'Ethics: veto'}
+                </span>
+                <button className="hover:underline opacity-80" onClick={()=>setShowEthics(s=>!s)}>
+                  {showEthics ? <span className="inline-flex items-center gap-1">Hide reasoning <ChevronUp className="w-3 h-3" /></span> : <span className="inline-flex items-center gap-1">View reasoning <ChevronDown className="w-3 h-3" /></span>}
+                </button>
+              </>
+            )}
           </div>
         )}
 

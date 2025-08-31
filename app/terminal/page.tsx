@@ -32,7 +32,7 @@ const res = await fetch(`/api/mcp/run`, {
 
   async function loadAudit() {
     try {
-const res = await fetch(`/api/mcp/audit?limit=50`);
+const res = await fetch(`/api/mcp/run?limit=50`);
       const data = await res.json();
       setAudit(data.entries || []);
     } catch (e) {

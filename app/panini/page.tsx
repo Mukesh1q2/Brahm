@@ -19,7 +19,7 @@ const HISTORY_REMOTE = process.env.NEXT_PUBLIC_HISTORY_REMOTE === 'true';
 //  - GET  /panini/search?q=...&limit=...
 //  - POST /panini/apply { program }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "";
 
 type Rule = { id: string; text: string; attrs?: Record<string, any> };
 

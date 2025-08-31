@@ -7,6 +7,7 @@ import type { AgentEvent } from "@/types/AgentEvents";
 import { X, Copy, ExternalLink, Filter } from "lucide-react";
 import dynamic from 'next/dynamic';
 import { flags } from "@/lib/flags";
+import { useGlobalWorkspace } from "@/store/globalWorkspace";
 const DiffViewerLazy = dynamic(() => import("@/components/panels/CodeDiffViewer"), { ssr: false });
 const QuantumGraphLazy = dynamic(() => import("@/components/visuals/QuantumGraph"), { ssr: false });
 
@@ -303,6 +304,8 @@ function ExperiencesList() {
 
 export default function RightContextPanel({ reasoningSummary, reasoningJson, codeDiff }: RightContextPanelProps) {
   const tab = useRightPanelStore((s) => s.tab);
+  // Subscribe to global workspace broadcast updates
+  const lastBroadcast = useGlobalWorkspace(s => s.lastBroadcast);
   // SSE controls
   const [enhanced, setEnhanced] = React.useState<boolean>(false);
   const [moduleProfile, setModuleProfile] = React.useState<'basic'|'enhanced'>('enhanced');
@@ -898,6 +901,29 @@ export default function RightContextPanel({ reasoningSummary, reasoningJson, cod
           </div>
         )}
       </div>
+
+      {/* Global Broadcast winner */}
+      {lastBroadcast && (() => { try {
+        const last = lastBroadcast;
+        const ethicsColor = last.ethics==='veto' ? 'bg-red-900/40 text-red-200 border-red-700/50' : last.ethics==='revise' ? 'bg-amber-900/40 text-amber-200 border-amber-700/50' : 'bg-emerald-900/30 text-emerald-200 border-emerald-700/40';
+        return (
+          <div className="rounded-lg border border-white/10 bg-white/5 p-3">
+            <div className="mb-1 flex items-center justify-between text-[11px] text-neutral-400">
+              <span>Global Broadcast</span>
+              <span className="text-neutral-500">{new Date(last.at).toLocaleTimeString()}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="rounded bg-white/10 px-2 py-0.5">source:{last.source}</span>
+              <span className="rounded bg-white/10 px-2 py-0.5">score:{last.score.toFixed(2)}</span>
+              {last.confidence!=null && <span className="rounded bg-white/10 px-2 py-0.5">conf:{last.confidence.toFixed(2)}</span>}
+              {last.uncertainty!=null && <span className="rounded bg-white/10 px-2 py-0.5">unc:{last.uncertainty.toFixed(2)}</span>}
+              {last.ethics && <span className={`rounded border px-2 py-0.5 ${ethicsColor}`}>ethics:{last.ethics}</span>}
+            </div>
+            {last.summary && (
+              <div className="mt-2 rounded bg-black/30 p-2 text-[12px] text-neutral-200">{last.summary}</div>
+            )}
+          </div>
+        ); } catch { return null; } })()}
 
       <div className="flex items-center gap-1">
         {TABS.map(({ key, label }) => (

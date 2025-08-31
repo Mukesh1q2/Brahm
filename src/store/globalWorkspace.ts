@@ -11,6 +11,17 @@ export type WorkspaceMetrics = {
   correlationSum: number; // running sum of E(phi)
 };
 
+export type BroadcastWinner = {
+  id: string;
+  source: string;
+  score: number;
+  summary?: string;
+  at: number;
+  confidence?: number;
+  uncertainty?: number;
+  ethics?: string; // allow | revise | veto
+};
+
 export type WorkspaceState = {
   currentSection: string | null;
   attention: number; // 0..1
@@ -19,6 +30,7 @@ export type WorkspaceState = {
   superpositionOutcome: 0 | 1 | null;
   entanglementPhi: number; // 0..pi/2
   metrics: WorkspaceMetrics;
+  lastBroadcast?: BroadcastWinner | null;
   // setters / actions
   setCurrentSection: (id: string | null) => void;
   setAttention: (v: number) => void;
@@ -29,6 +41,7 @@ export type WorkspaceState = {
   setEntanglementPhi: (v: number) => void;
   recordEntanglementUpdate: (phi: number, correlation: number) => void;
   resetMetrics: () => void;
+  publishBroadcast: (w: BroadcastWinner) => void;
 };
 
 export const useGlobalWorkspace = create<WorkspaceState>()(persist((set, get) => ({
@@ -39,6 +52,7 @@ export const useGlobalWorkspace = create<WorkspaceState>()(persist((set, get) =>
   superpositionOutcome: null,
   entanglementPhi: Math.PI / 4,
   metrics: { measurements: 0, outcomes: { zero: 0, one: 0 }, entUpdates: 0, correlationSum: 0 },
+  lastBroadcast: null,
 
   setCurrentSection: (id) => set({ currentSection: id }),
   setAttention: (v) => set({ attention: clamp(v, 0, 1) }),
@@ -64,6 +78,7 @@ export const useGlobalWorkspace = create<WorkspaceState>()(persist((set, get) =>
     }
   })),
   resetMetrics: () => set({ metrics: { measurements: 0, outcomes: { zero: 0, one: 0 }, entUpdates: 0, correlationSum: 0 } }),
+  publishBroadcast: (w) => set({ lastBroadcast: w }),
 }), {
   name: 'brahm_workspace',
   version: 1,
@@ -74,6 +89,7 @@ export const useGlobalWorkspace = create<WorkspaceState>()(persist((set, get) =>
     superpositionOutcome: s.superpositionOutcome,
     entanglementPhi: s.entanglementPhi,
     metrics: s.metrics,
+    lastBroadcast: s.lastBroadcast,
   }) as any,
 }));
 
