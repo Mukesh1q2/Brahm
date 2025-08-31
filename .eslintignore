@@ -1,0 +1,11 @@
+# Ignore build output, deps, and generated types
+.next/
+node_modules/
+dist/
+coverage/
+# Ignore test fixtures
+**/__fixtures__/**
+
+# Temporarily ignore files with rules/plugins not in this environment
+src/lib/conscious/kernel.ts
+app/quantum/_components/QuantumExperience.tsx

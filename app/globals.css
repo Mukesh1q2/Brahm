@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  /* Dark theme variables */
+  --bg-deep: #0d0d0d;
+  --bg-surface: rgba(255,255,255,0.04);
+  --border-soft: rgba(255,255,255,0.08);
+  --text-dim: rgba(255,255,255,0.7);
+  --glass: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+  
+  /* App theme tokens - Dark */
+  --app-bg: #0d0d0d;
+  --app-fg: #e5e7eb;
+  --app-text-primary: #ffffff;
+  --app-text-secondary: #d1d5db;
+  --app-text-muted: #9ca3af;
+  --panel-bg: rgba(255,255,255,0.05);
+  --panel-border: rgba(255,255,255,0.12);
+  --accent: #7c3aed;
+  --accent-hover: #8b5cf6;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  
+  /* Interactive elements */
+  --button-bg: rgba(255,255,255,0.1);
+  --button-hover: rgba(255,255,255,0.2);
+  --input-bg: rgba(255,255,255,0.05);
+  --input-border: rgba(255,255,255,0.12);
+}
+
+/* Light theme overrides */
+.theme-light {
+  color-scheme: light;
+  /* Light theme variables */
+  --app-bg: #ffffff;
+  --app-fg: #111827;
+  --app-text-primary: #111827;
+  --app-text-secondary: #374151;
+  --app-text-muted: #6b7280;
+  --panel-bg: rgba(0,0,0,0.02);
+  --panel-border: rgba(0,0,0,0.08);
+  --text-dim: rgba(0,0,0,0.7);
+  
+  /* Interactive elements - Light */
+  --button-bg: rgba(0,0,0,0.05);
+  --button-hover: rgba(0,0,0,0.1);
+  --input-bg: rgba(0,0,0,0.02);
+  --input-border: rgba(0,0,0,0.12);
+  
+  /* Ensure proper contrast */
+  --glass: linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.06) 100%);
+}
+
+/* Dark theme explicit class */
+.theme-dark { 
+  color-scheme: dark;
+  /* Reset to dark variables */
+  --app-bg: #0d0d0d;
+  --app-fg: #e5e7eb;
+  --app-text-primary: #ffffff;
+  --app-text-secondary: #d1d5db;
+  --app-text-muted: #9ca3af;
+}
+
+/* Quantum theme */
+.theme-quantum {
+  color-scheme: dark;
+  --app-bg: radial-gradient(ellipse at center, #001122 0%, #000000 100%);
+  --app-fg: #00f4ff;
+  --app-text-primary: #00f4ff;
+  --app-text-secondary: #64d2ff;
+  --app-text-muted: #0891b2;
+  --accent: #ff00f4;
+  --accent-hover: #ff33f6;
+  --panel-bg: rgba(0,244,255,0.05);
+  --panel-border: rgba(0,244,255,0.2);
+}
+
+/* Glass card */
+.glass-card {
+  background: var(--glass);
+  border: 1px solid var(--border-soft);
+  backdrop-filter: blur(12px);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+
+/* Neon outline utility */
+.neon-outline {
+  box-shadow: 0 0 0 1px rgba(79, 210, 255, 0.35), 0 0 20px rgba(0, 240, 255, 0.25);
+}
+
+html, body {
+  min-height: 100%;
+}
+
+/* Base colors via tokens */
+body {
+  background: var(--app-bg);
+  color: var(--app-fg);
+}
+
+/* Focus visibility baseline */
+:focus-visible {
+  outline: 2px solid #7c3aed; /* brand-600 */
+  outline-offset: 2px;
+}
+
+/* Simple container normalization */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Universal text color fixes for theme switching */
+.theme-light .text-white {
+  color: var(--app-text-primary) !important;
+}
+
+/* Handle common opacity variants used across the app */
+.theme-light .text-white\/95,
+.theme-light .text-white\/90,
+.theme-light .text-white\/85,
+.theme-light .text-white\/80,
+.theme-light .text-white\/70,
+.theme-light .text-white\/60 {
+  color: var(--app-text-primary) !important;
+}
+
+.theme-light .text-gray-300 {
+  color: var(--app-text-secondary) !important;
+}
+
+.theme-light .text-gray-400 {
+  color: var(--app-text-muted) !important;
+}
+
+/* Common background/border utility overrides for light theme */
+.theme-light .bg-white\/5 { background-color: rgba(0,0,0,0.04) !important; }
+.theme-light .bg-white\/10 { background-color: rgba(0,0,0,0.06) !important; }
+.theme-light .bg-white\/15 { background-color: rgba(0,0,0,0.08) !important; }
+.theme-light .bg-white\/20 { background-color: rgba(0,0,0,0.12) !important; }
+.theme-light .border-white\/5 { border-color: rgba(0,0,0,0.05) !important; }
+.theme-light .border-white\/10 { border-color: rgba(0,0,0,0.08) !important; }
+.theme-light .border-white\/15 { border-color: rgba(0,0,0,0.12) !important; }
+.theme-light .border-white\/20 { border-color: rgba(0,0,0,0.16) !important; }
+
+/* In light theme, ensure prose-invert-like content stays readable */
+.theme-light .prose,
+.theme-light .prose-invert {
+  color: var(--app-text-primary) !important;
+}
+
+/* Ensure buttons have proper contrast */
+.theme-light button {
+  color: var(--app-text-primary);
+}
+
+.theme-light input, .theme-light textarea {
+  color: var(--app-text-primary);
+  background: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+/* Fix navigation text in light theme */
+.theme-light nav a {
+  color: var(--app-text-secondary) !important;
+}
+
+.theme-light nav a:hover {
+  color: var(--app-text-primary) !important;
+}
+
+/* Improve contrast for light UI elements within Panini page */
+.panini-light .bg-gray-50,
+.panini-light .bg-gray-100,
+.panini-light .bg-gray-200,
+.panini-light .bg-blue-200,
+.panini-light .bg-red-200,
+.panini-light .bg-yellow-200,
+.panini-light .bg-green-200,
+.panini-light .bg-indigo-200 {
+  color: rgb(17 24 39) !important; /* text-gray-900 */
+}
+
+/* Copy/Select functionality styles */
+.selectable {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.copy-button {
+  background: var(--button-bg);
+  border: 1px solid var(--input-border);
+  color: var(--app-text-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-button:hover {
+  background: var(--button-hover);
+  color: var(--app-text-primary);
+}
+
+/* Quantum stabilization helpers */
+.quantum-layout-stabilized { overflow-x: hidden; }
+.quantum-layout-stabilized .content-container { transform: none !important; }
+.three-scene, .quantum-visualization { isolation: isolate; contain: layout paint; transform-style: flat; }
+.brahm-icon, .phi-value-display, .welcome-text { position: relative; z-index: 1000; transform: none !important; }
+#emergency-stabilize { z-index: 10000 !important; }
+
+/* Edition gating helpers */
+.edition-basic .advanced-only { display: none !important; }
+.edition-advanced .basic-only { display: none !important; }

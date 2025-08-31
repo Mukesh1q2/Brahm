@@ -1,0 +1,47 @@
+name: E2E - Playwright
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        env:
+          NEXT_PUBLIC_FUTURISTIC_UI: 'true'
+          NEXT_PUBLIC_E2E_HOOKS: 'true'
+          NEXT_PUBLIC_PERSIST_REMOTE: 'true'
+          NEXT_PUBLIC_CHATGPT_UI: 'true'
+          PORT: '3020'
+          TSC_COMPILE_ON_ERROR: 'true'
+        run: npm run test:e2e
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            playwright-report
+            test-results
+

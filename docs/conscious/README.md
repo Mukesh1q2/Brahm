@@ -1,0 +1,75 @@
+# Brahm Conscious AI - Enhanced Specification (Phase 1 scaffolding)
+
+This document captures the high-level architecture and maps it to the codebase, starting with a Phase 1 kernel and Phase 2 interfaces that can be implemented incrementally.
+
+References:
+- Core kernel: src/lib/conscious/kernel.ts
+- Types: src/types/Conscious.ts
+- SSE: app/api/agents/stream/route.ts
+- Run API: app/api/agents/run/route.ts
+- Tool API: app/api/tools/execute/route.ts
+- Tool Catalog: app/api/tools/route.ts
+- Dev page (SSE tester): app/agents/dev/page.tsx
+
+Module injection (Phase 2)
+The kernel is constructed with default no-op modules. Replace them with real implementations by editing src/lib/conscious/kernel.ts or by adding a factory/DI later.
+- AttentionSystem: src/lib/conscious/attention.ts (NoopAttentionSystem)
+- SalienceEngine: src/lib/conscious/salience.ts (NoopSalienceEngine)
+- AdvancedPhiCalculator: src/lib/conscious/phi.ts (NoopPhiCalculator)
+- EnhancedMemory: src/lib/conscious/memory.ts (InMemoryEnhancedMemory)
+- MetaCognitiveSystem: src/lib/conscious/metacog.ts (NoopMetaCognitiveSystem)
+- EnhancedEthicsSystem: src/lib/conscious/ethics.ts (NoopEthicsSystem)
+- ConsciousToolSystem: src/lib/conscious/tools.ts (NoopConsciousToolSystem)
+- AdvancedConsciousnessSafety: src/lib/conscious/safety.ts (NoopConsciousnessSafety)
+
+Module profiles
+- KernelOptions supports `moduleProfile?: 'basic' | 'enhanced' | 'custom'` (see src/types/Conscious.ts).
+- Kernel constructor selects modules by profile (src/lib/conscious/kernel.ts):
+  - basic → Noop* modules (lowest overhead)
+  - enhanced → Enhanced* modules (attention, salience, phi, ethics, tools, safety)
+- SSE route accepts `profile=basic|enhanced` and forwards it; UI exposes a Profile selector in Console and Quantum.
+
+Tools with guardians
+- Public APIs:
+  - GET /api/tools  lists available tools
+  - POST /api/tools/execute { tool, args } 
+- Executes via src/lib/tools/execute.ts registry (built-ins: echo, web_search stub)
+- Applies src/lib/conscious/guardians.ts pre/post checks (block dangerous tools; flag sensitive/large output)
+- Kernel's EnhancedConsciousToolSystem now calls the executor and appends guard + impact metadata.
+
+Built-in tools
+- echo: returns the input args for debugging
+- web_search: stubbed search returning sample links/snippets
+- calc: safe arithmetic evaluator supporting numbers, + - * /, exponentiation (^), and parentheses (clamped to safe range)
+
+Console Tool Runner
+- Gated by env flag NEXT_PUBLIC_TOOL_RUNNER (default: false)
+- Optional server token gate: set TOOL_RUNNER_TOKEN (server env). Client will send it as 'x-tool-runner-token' header when NEXT_PUBLIC_TOOL_RUNNER_TOKEN matches, and server enforces it.
+- Exposes dropdown of tools (from GET /api/tools), JSON args input, Run button, and recent runs history
+
+Kernel tab (Console)
+- New “Kernel” tab shows:
+  - Prediction error sparkline
+  - Phi weight mix (GWT/causal/PP) with legend
+  - Qualia count
+  - Recent coalitions and last winner with quick Trace/JSON links
+
+Wiring the UI
+- Non-stream: POST /api/agents/run { goal, steps? } → returns transcript/summary/diff used by Canvas and Right Panel.
+- Stream: GET /api/agents/stream?goal=...&steps=... → RightContextPanel "Stream Run" consumes SSE and pushes events into the global agent event bus (trace/json rendering tabs).
+- Dev: visit /agents/dev to start/stop an SSE stream and inspect raw events.
+
+Replacing Noop modules
+1. Implement your concrete module in the matching file (or a new file) exporting the same interface.
+2. Swap instantiation in the kernel constructor, e.g.:
+   this.attention = new MyAttentionSystem(params)
+3. Extend KernelEvent typing if you emit richer events (e.g., qualia_generation). The Right Panel trace tab will show JSON automatically; we can add a richer renderer when the schemas are stable.
+
+Security & telemetry
+- Middleware applies rate limiting and auth for specific API groups.
+- Model headers and client telemetry events are preserved for Console/Header metrics.
+
+Next steps:
+- Implement concrete modules per your spec and progressively replace Noops.
+- Extend RightContextPanel to render enhanced events (attention/phi/qualia) with dedicated views.
+- Add guardian pre/post tool checks and route tool calls to /api/tools/execute.

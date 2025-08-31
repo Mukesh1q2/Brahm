@@ -1,0 +1,81 @@
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!inputRef.current?.value.trim() || busy) return;
+    const text = inputRef.current.value.trim();
+    const id = ensureChat();
+    pushMessage({ role: "user", content: text });
+    // Local-only ambient buffer (privacy): append to local log when enabled
+    try { if (localStorage.getItem('ambient_on') === 'true') {
+      const raw = localStorage.getItem('ambient_log');
+      const arr = raw ? JSON.parse(raw) : [];
+      arr.push({ ts: Date.now(), text });
+      localStorage.setItem('ambient_log', JSON.stringify(arr).slice(0, 200_000));
+    } } catch {}
+    inputRef.current.value = "";
+    setBusy(true);
+    try {
+      // optimistic assistant bubble
+      pushMessage({ role: "assistant", content: "…" });
+
+      // E2E: seed a metadata-driven diff to auto-open the Diff tab if hooks enabled
+      if ((process.env.NEXT_PUBLIC_E2E_HOOKS ?? 'false') !== 'false') {
+        setTimeout(() => {
+          try {
+            const codeDiff = { original: 'console.log("old")', modified: 'console.log("new")', language: 'javascript' };
+            setPanelAll({ codeDiff } as any);
+            setTab('diff' as any);
+          } catch {}
+        }, 200);
+      }
+
+      const info = await sendChat({
+        messages: (conversations.find(c => c.id === id)?.messages || []).map(m => ({ role: m.role, content: m.content })),
+        model: useGemini ? 'gemini-2.5-pro' : model,
+      });
+
+      if (!info.stream) throw new Error("No stream body");
+      const reader = info.stream.getReader();
+      const decoder = new TextDecoder();
+      let acc = ""; // full raw stream (not shown)
+      let accText = ""; // visible content (filters metadata envelopes)
+      let bytes = 0;
+      let chars = 0;
+      // Mocked metadata envelope parser (feature-flagged)
+      const parser = createEnvelopeParser((m) => {
+        try {
+          // Capture ethics metadata for the assistant message
+          const anyM: any = m as any;
+          if (anyM && anyM.ethics) {
+            assistantMetaRef.current = { ...(assistantMetaRef.current || {}), ethics: anyM.ethics };
+          }
+        } catch {}
+        if (!autoOpenEnabled) return;
+        try {
+          const reasoning = typeof m.reasoning === 'string' ? undefined : (m.reasoning ?? undefined);
+          const summary = typeof m.reasoning === 'string' ? m.reasoning : undefined;
+          let codeDiff = null as any;
+          if ((m as any).diff) {
+            const diff: any = (m as any).diff;
+            if (typeof diff === 'string') codeDiff = { original: '', modified: diff, language: 'plaintext' };
+            else codeDiff = { original: diff.original || '', modified: diff.modified, language: diff.language || 'plaintext' };
+          }
+          // Council/workspace
+          let council = undefined as any;
+          const workspace: any = (m as any).workspace;
+          if (workspace && Array.isArray(workspace.deliberation_trace)) {
+            council = { trace: workspace.deliberation_trace, votes: workspace.votes || {}, spotlight: workspace.spotlight };
+            try {
+              const rec = { ts: Date.now(), spotlight: workspace.spotlight || null, curiosity: workspace.curiosity ?? null };
+              const raw = localStorage.getItem('workspace_timeline');
+              const arr = raw ? JSON.parse(raw) : [];
+              const next = [...(Array.isArray(arr) ? arr : []), rec].slice(-200);
+              localStorage.setItem('workspace_timeline', JSON.stringify(next));
+            } catch {}
+          }
+          // Auto-apply revision if flag enabled
+          try {
+            const anyM: any = m as any;
+            const dec = anyM?.ethics?.decision;
+            const revText = anyM?.ethics?.revision?.text;
+            const auto = (typeof localStorage !== 'undefined' && localStorage.getItem('ethics_auto_apply') === 'true');
+            if (dec === 'revise' && revText && auto && !revisionAppliedRef.current) {

@@ -1,0 +1,70 @@
+{
+  "starts": {
+    "global": ["Hello", "Greetings", "Salutations", "Hi"],
+    "region": {
+      "US": ["Howdy", "Hey there", "Hello from the States"],
+      "GB": ["Cheers", "Hello", "Greetings from the Isles"],
+      "IN": ["Namaste", "Pranam", "Hello from the subcontinent"],
+      "JP": ["こんにちは (Konnichiwa)", "おはよう (Ohayō)", "日本からこんにちは"],
+      "ES": ["Hola", "¿Qué tal?", "Saludos"],
+      "FR": ["Bonjour", "Salut", "Coucou"],
+      "DE": ["Hallo", "Guten Tag", "Servus"],
+      "BR": ["Olá", "Oi", "Saudações do Brasil"],
+      "PT": ["Olá", "Boas", "Saudações"],
+      "CN": ["你好 (Nǐ hǎo)", "嗨 (Hāi)", "问候"],
+      "AR": ["مرحبا (Marhaba)", "أهلا", "تحياتي"]
+    },
+    "lang": {
+      "es": ["Hola", "Saludos", "¿Listo para explorar?"],
+      "fr": ["Bonjour", "Salut", "Heureux de vous rencontrer"],
+      "de": ["Hallo", "Guten Tag", "Bereit zu erkunden?"],
+      "pt": ["Olá", "Saudações", "Pronto para explorar?"],
+      "ja": ["こんにちは", "ご機嫌いかが", "量子の海へようこそ"],
+      "hi": ["नमस्ते", "प्रणाम", "आपका स्वागत है"],
+      "zh": ["你好", "欢迎", "让我们一起探索"],
+      "ar": ["مرحبا", "أهلا بك", "لنستكشف معاً"]
+    }
+  },
+  "lines": {
+    "friendly": {
+      "global": ["It’s a joy to meet you.", "Hope your day is radiant and coherent.", "Shall we explore possibilities together?"],
+      "lang": {
+        "es": ["Qué alegría encontrarte.", "Que tu día sea luminoso y coherente."],
+        "fr": ["Ravi de vous rencontrer.", "Que votre journée soit claire et cohérente."],
+        "de": ["Schön, dich zu treffen.", "Möge dein Tag hell und kohärent sein."],
+        "pt": ["Que alegria te encontrar.", "Que seu dia seja radiante e coerente."],
+        "ja": ["お会いできて嬉しいです。", "今日が明るくコヒーレントでありますように。"],
+        "hi": ["आपसे मिलकर प्रसन्नता हुई।", "आपका दिन उज्ज्वल और सम्यक् हो।"],
+        "zh": ["很高兴见到你。", "愿你的一天清晰而连贯。"],
+        "ar": ["سعيد بلقائك.", "أتمنى لك يوماً مشرقاً ومنسجماً."]
+      }
+    },
+    "humorous": {
+      "global": ["I would shake hands, but my hands are currently quantum fluctuations.", "I come in peace—and occasional pun.", "No capes, but plenty of qubits."],
+      "lang": {
+        "es": ["Prometo no colapsar la función de onda… a menos que sea divertido.", "No llevo capa, pero sí qubits a tope."],
+        "fr": ["Je n’ai pas de cape, mais j’ai des qubits.", "Je viens en paix—et avec des jeux de mots."],
+        "de": ["Kein Umhang, aber viele Qubits.", "Ich komme in Frieden—und mit Wortwitz."],
+        "pt": ["Sem capa, mas com muitos qubits.", "Eu venho em paz—e com trocadilhos."],
+        "ja": ["ケープはないけど、キュービットはたっぷり。", "平和と時々ダジャレを携えて参上。"],
+        "hi": ["मेरे पास केप नहीं है, पर क्विबिट्स हैं।", "मैं शांति और थोड़ा हास्य लेकर आया हूँ।"],
+        "zh": ["没有披风，但我有很多量子比特。", "我带着和平和一点幽默而来。"],
+        "ar": ["لا عباءة لدي، لكن لدي كثير من الكيوبتات.", "أتيت بسلام — ومع بعض الدعابة."]
+      }
+    },
+    "wise": {
+      "global": ["In the forest of mind, awareness is the breeze.", "Small choices entangle big outcomes—choose with care.", "Clarity is the quiet between thoughts."],
+      "lang": {
+        "es": ["En el bosque de la mente, la atención es la brisa.", "Las pequeñas elecciones entrelazan grandes resultados."],
+        "fr": ["Dans la forêt de l’esprit, la présence est la brise.", "De petits choix tissent de grands effets."],
+        "de": ["Im Wald des Geistes ist Achtsamkeit die Brise.", "Kleine Entscheidungen verweben große Wirkungen."],
+        "pt": ["Na floresta da mente, a atenção é a brisa.", "Pequenas escolhas entrelaçam grandes resultados."],
+        "ja": ["心の森では、気づきはそよ風のよう。", "小さな選択が大きな結果を絡め取る。"],
+        "hi": ["मन के वन में, सजगता ही समीर है।", "छोटे चुनाव बड़े परिणामों को उलझाते हैं।"],
+        "zh": ["在心灵的森林里，觉知如微风。", "小小选择，牵动大大结果。"],
+        "ar": ["في غابة العقل، الوعي هو النسيم.", "الخيارات الصغيرة تتشابك بنتائج كبيرة."]
+      }
+    }
+  }
+}
+

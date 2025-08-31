@@ -1,0 +1,67 @@
+name: Feature
+
+description: Propose a new feature or improvement
+
+title: "[Feature] <summary>"
+
+labels:
+  - "type:feature"
+
+body:
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Phase
+      options:
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+        - "7"
+      description: Which roadmap phase does this belong to?
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - ui
+        - api
+        - agents
+        - persistence
+        - infra
+        - testing
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What, why, and acceptance criteria (Definition of Done)
+      placeholder: "Describe the problem and the proposed solution. Include DoD and dependencies."
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      placeholder: "List any dependent tasks or phases"
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      placeholder: "Additional context, links, or screenshots"
+

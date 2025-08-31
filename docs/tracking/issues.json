@@ -1,0 +1,117 @@
+{
+  "repo": "brahm-frontend",
+  "instructions": "Seed these as GitHub issues using gh CLI. For each item, apply labels: phase:<N>, priority:<Px>, area:<...>. Use the 'body' as the issue description.",
+  "issues": [
+    {
+      "title": "Phase 2: Wire envelope parser into chat stream (auto-open + diff)",
+      "labels": ["phase:2", "priority:P0", "area:ui"],
+      "body": "Integrate createEnvelopeParser into the chat stream consumer. On envelope.tab, call setTab(tab). On envelope.diff, call setCodeDiff({ original, modified, language }). Ensure graceful fallback on parse errors. DoD: Streaming chat updates Right Panel; diff envelope opens Diff tab; errors don’t break stream."
+    },
+    {
+      "title": "Phase 2: Centralize envelope types + runtime validation",
+      "labels": ["phase:2", "priority:P0", "area:ui"],
+      "body": "Move MetadataEnvelope types to src/types; add light runtime validation (guards or zod). Ensure server routes emit valid envelopes."
+    },
+    {
+      "title": "Phase 2: Auto-open policy + tab badges",
+      "labels": ["phase:2", "priority:P1", "area:ui"],
+      "body": "Implement ‘follow envelopes’ toggle, new-tab badges for updates, and keyboard toggle."
+    },
+    {
+      "title": "Phase 2: Envelope telemetry and tests",
+      "labels": ["phase:2", "priority:P0", "area:testing"],
+      "body": "Add E2E: reasoning+diff triggers (auto-open); unit tests for parser edge cases; WARP.md snippet on envelopes."
+    },
+
+    {
+      "title": "Phase 3: Next-auth JWT config + smoke route",
+      "labels": ["phase:3", "priority:P0", "area:api"],
+      "body": "Configure next-auth (JWT); document AUTH_SECRET/NEXTAUTH_URL. Add /api/ping-auth protected route; E2E smoke."
+    },
+    {
+      "title": "Phase 3: Prisma schema + migrations (conversations/messages)",
+      "labels": ["phase:3", "priority:P0", "area:persistence"],
+      "body": "Add schema.prisma + migrations for conversations/messages (createdAt/updatedAt/meta). Update docs and WARP."
+    },
+    {
+      "title": "Phase 3: /api/conversations GET(since)/POST(upsert)",
+      "labels": ["phase:3", "priority:P0", "area:api"],
+      "body": "Implement auth-required endpoints with payload validation and normalized responses. Add latency telemetry."
+    },
+    {
+      "title": "Phase 3: /api/messages GET/POST",
+      "labels": ["phase:3", "priority:P0", "area:api"],
+      "body": "Implement auth-required message endpoints with validation and telemetry."
+    },
+    {
+      "title": "Phase 3: SyncClient integration & auth header propagation",
+      "labels": ["phase:3", "priority:P1", "area:ui"],
+      "body": "Gate with NEXT_PUBLIC_PERSIST_REMOTE. Support base URL + bearer header; retry on 401."
+    },
+
+    {
+      "title": "Phase 4: Client queue with persistence (offline-first)",
+      "labels": ["phase:4", "priority:P0", "area:ui"],
+      "body": "Implement queue persisted in localStorage/indexedDB; retry/backoff; flush on online/auth."
+    },
+    {
+      "title": "Phase 4: LWW conflict resolution",
+      "labels": ["phase:4", "priority:P0", "area:ui"],
+      "body": "Use updatedAt semantics to resolve conflicts; log conflicts to telemetry."
+    },
+    {
+      "title": "Phase 4: Sync orchestration (initial + periodic)",
+      "labels": ["phase:4", "priority:P1", "area:ui"],
+      "body": "Initial sync on auth; polling with since; batching/backpressure."
+    },
+    {
+      "title": "Phase 4: Failure handling & durability",
+      "labels": ["phase:4", "priority:P1", "area:ui"],
+      "body": "Offline detection; queue caps; user notifications on drops."
+    },
+
+    {
+      "title": "Phase 5: Define AgentEvent schema v1",
+      "labels": ["phase:5", "priority:P0", "area:agents"],
+      "body": "Extend types for debate/validate/execute/patch; version the schema; keep bus compatibility."
+    },
+    {
+      "title": "Phase 5: Harden SSE route (heartbeats/timeouts)",
+      "labels": ["phase:5", "priority:P0", "area:api"],
+      "body": "Add heartbeats, idle timeouts, and backpressure-aware chunking. Support query filters."
+    },
+    {
+      "title": "Phase 5: Trace tab integration",
+      "labels": ["phase:5", "priority:P1", "area:ui"],
+      "body": "Render agent lifecycle in Trace; retain last N events; add clear controls."
+    },
+
+    {
+      "title": "Phase 6: Memory tab (backend-aware)",
+      "labels": ["phase:6", "priority:P1", "area:ui"],
+      "body": "Fetch recent conversations/messages; pagination/filters."
+    },
+    {
+      "title": "Phase 6: Trace timeline (agent lifecycle)",
+      "labels": ["phase:6", "priority:P1", "area:ui"],
+      "body": "Timeline of plan/retrieve/debate/validate/answer with jump-to events."
+    },
+    {
+      "title": "Phase 6: Diff tab multi-file + actions",
+      "labels": ["phase:6", "priority:P2", "area:ui"],
+      "body": "Add multi-file diff rendering, improve syntax perf, and copy/apply guardrails."
+    },
+
+    {
+      "title": "Phase 7: Kernel scaffold + emitter + module interfaces",
+      "labels": ["phase:7", "priority:P1", "area:agents"],
+      "body": "Create src/lib/conscious/kernel.ts with a basic loop emitting KernelEvent and define module interfaces aligned to src/types/Conscious.ts."
+    },
+    {
+      "title": "Phase 7: Minimal eventful run wired to SSE + test harness",
+      "labels": ["phase:7", "priority:P1", "area:agents"],
+      "body": "Wire KernelEvent to SSE so UI consumes via Trace; add deterministic seeds and snapshot tests."
+    }
+  ]
+}
+

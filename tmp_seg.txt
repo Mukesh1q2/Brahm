@@ -1,0 +1,39 @@
+/* Stack Diagram / What is Brahm */}
+      <section id="stack" className="container px-6 py-16">
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold">What is Brahm-AI?</h2>
+          <p className="mt-2 max-w-2xl text-sm text-gray-400">
+            Brahm blends Vedic principles with modern AI: attention dynamics, predictive processing, causal integration, and ethical scaffolding.
+            The UI streams live kernel events so you can observe, iterate, and evolve behavior safely.
+          </p>
+        </div>
+        <div className="grid items-start gap-4 md:grid-cols-2">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <h3 className="mb-2 text-sm font-medium text-gray-200">Brahm Stack</h3>
+            <ul className="space-y-2 text-sm text-gray-300">
+              <li>• Conscious Kernel: attention, phi, salience</li>
+              <li>• Predictive Processing: error → weights modulation</li>
+              <li>• CIPS: coalitions → qualia → active inference → evolution</li>
+              <li>• Ethics & Safety: dharmic principles, stability monitor</li>
+              <li>• Tools: conscious execution + impact</li>
+              <li>• Memory: episodic store and summaries</li>
+            </ul>
+          </div>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <h3 className="mb-2 text-sm font-medium text-gray-200">Progress Timeline</h3>
+            <ul className="space-y-2 text-sm text-gray-300">
+              <li>• PP modulation tests + UI badges ✓</li>
+              <li>• CIPS events + evolution weights ✓</li>
+              <li>• E2E stability (agent bus waits) ✓</li>
+              <li>• Marketing landing v1 (this page) •</li>
+              <li>• Quantum graph & state playback (coming)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Minimal Chat on home for E2E */}
+      <HomeChat />
+
+      {/* CTA */}
+      <section className="cont

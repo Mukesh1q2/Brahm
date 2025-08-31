@@ -1,0 +1,28 @@
+# Node/Next.js
+node_modules/
+.next/
+out/
+coverage/
+
+# Testing artifacts
+playwright-report/
+test-results/
+*.log
+
+# OS/editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Env
+.env
+.env.*
+
+# Misc
+*.local
+.vscode/
+.idea/
+
+# Large patches (ignore)
+patches/*.patch

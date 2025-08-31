@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Type-check and run E2E tests before pushing (keep pre-commit fast)
+npm run typecheck || exit 1
+npm run test:e2e || exit 1
+

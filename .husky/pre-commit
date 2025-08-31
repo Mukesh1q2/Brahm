@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Auto-fix lint issues, then run unit tests before allowing commit
+npm run lint -- --fix || exit 1
+npm run test:ci || exit 1
+

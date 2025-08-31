@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "target": "ES2019"
+  },
+  "include": ["app/**/*.ts", "app/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx"]
+}

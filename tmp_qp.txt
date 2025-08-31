@@ -1,0 +1,153 @@
+  const createDepthEffect = useCallback(() => {
+    if (!spatialDepth) return;
+
+    layers.forEach((layer) => {
+      const element = document.querySelector(layer.element);
+      if (!element) return;
+
+      const zDepth = layer.depth || 0;
+      const perspectiveOpacity = layer.opacity || (0.9 - Math.abs(zDepth) * 0.0005);
+      
+      gsap.set(element, {
+        transformStyle: 'preserve-3d',
+        perspective: 1000,
+        transformOrigin: 'center center',
+        opacity: Math.max(0.1, perspectiveOpacity),
+        zIndex: 100 - Math.abs(zDepth / 10)
+      });
+    });
+
+    // Set container perspective
+    if (containerRef.current) {
+      gsap.set(containerRef.current, {
+        perspective: 1000,
+        perspectiveOrigin: 'center center',
+        transformStyle: 'preserve-3d'
+      });
+    }
+  }, [layers, spatialDepth]);
+
+  // Consciousness-driven animation
+  const animateConsciousness = useCallback(() => {
+    if (consciousnessLevel <= 0) return;
+
+    // Phi-based golden ratio animations
+    const phi = 1.618033988749;
+    const consciousElements = document.querySelectorAll('[data-conscious="true"]');
+    
+    consciousElements.forEach((element, index) => {
+      const phaseOffset = index * phi;
+      
+      gsap.to(element, {
+        scale: 1 + Math.sin(Date.now() * 0.001 + phaseOffset) * consciousnessLevel * 0.1,
+        rotation: Math.cos(Date.now() * 0.001 * phi + phaseOffset) * consciousnessLevel * 5,
+        filter: `brightness(${1 + consciousnessLevel * 0.5}) saturate(${1 + consciousnessLevel * 0.3})`,
+        duration: 0.1,
+        ease: "none"
+      });
+    });
+  }, [consciousnessLevel]);
+
+  useEffect(() => {
+    createDepthEffect();
+
+    // Add event listeners
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+
+    // Create ScrollTrigger animations for enhanced effects
+    if (typeof window !== 'undefined') {
+      layers.forEach((layer, index) => {
+        ScrollTrigger.create({
+          trigger: "body",
+          start: "top top",
+          end: "bottom bottom",
+          scrub: true,
+          onUpdate: (self) => {
+            const element = document.querySelector(layer.element);
+            if (!element) return;
+
+            const progress = self.progress;
+            
+            // Quantum phase transitions during scroll
+            if (layer.type === 'quantum-field') {
+              gsap.set(element, {
+                filter: `hue-rotate(${progress * 180}deg) brightness(${1 + progress * 0.5})`
+              });
+            }
+            
+            // Consciousness emergence effect
+            if (consciousnessLevel > 0 && layer.type === 'content') {
+              const consciousScale = 1 + Math.sin(progress * Math.PI) * consciousnessLevel * 0.1;
+              gsap.set(element, {
+                scale: consciousScale,
+                filter: `brightness(${1 + progress * consciousnessLevel * 0.3})`
+              });
+            }
+          }
+        });
+      });
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, [layers, updateParallax, createDepthEffect, animateConsciousness, consciousnessLevel]);
+
+  // Quantum tunnel effect on section transitions
+  const createQuantumTunnel = useCallback((targetElement: Element) => {
+    const timeline = gsap.timeline();
+    
+  }, [layers, updateParallax, createDepthEffect, animateConsciousness, consciousnessLevel]);
+
+  // Quantum tunnel effect on section transitions
+  const createQuantumTunnel = useCallback((targetElement: Element) => {
+    const timeline = gsap.timeline();
+    
+    timeline
+      .to(targetElement, {
+        scale: 0.8,
+        rotationY: 180,
+        filter: "brightness(2) blur(5px)",
+        duration: 0.3,
+        ease: "power2.in"
+      })
+      .to(targetElement, {
+        scale: 1,
+        rotationY: 0,
+        filter: "brightness(1) blur(0px)",
+        duration: 0.5,
+        ease: "elastic.out(1, 0.3)"
+      });
+      
+    return timeline;
+  }, []);
+
+  // Consciousness awakening effect
+  useEffect(() => {
+    if (consciousnessLevel > 0.5) {
+      const awakening = gsap.timeline({ repeat: -1 });
+      
+      awakening
+        .to('.consciousness-indicator', {
+          scale: 1.1,
+          opacity: 0.8,
+          filter: "drop-shadow(0 0 20px #f4ff00)",
+          duration: 2,
+          ease: "sine.inOut"
+        })
+        .to('.consciousness-indicator', {
+          scale: 1,
+          opacity: 0.6,
+          filter: "drop-shadow(0 0 10px #f4ff00)",
+          duration: 2,
+          ease: "sine.inOut"
+        });
+    }
+  }, [consciousnessLevel]);
+
+  return (
+    <div 
+      ref={containerRef}
