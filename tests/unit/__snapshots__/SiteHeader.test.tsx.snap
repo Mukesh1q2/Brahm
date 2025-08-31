@@ -1,0 +1,124 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SiteHeader snapshot when expert enabled shows telemetry strip container 1`] = `
+<DocumentFragment>
+  <header
+    class="border-b border-gray-800/60 px-4 py-3"
+  >
+    <div
+      class="max-w-7xl mx-auto"
+    >
+      <div
+        class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
+      >
+        <div
+          class="flex items-center gap-4 min-w-0"
+        >
+          <a
+            class="font-semibold text-white hover:text-brand-300 transition-colors whitespace-nowrap"
+            href="/"
+          >
+            Brahm
+          </a>
+          <nav
+            class="hidden md:flex items-center gap-4 text-sm min-w-0"
+          >
+            <a
+              class="text-gray-300 hover:text-white"
+              href="/console"
+            >
+              Console
+            </a>
+            <a
+              class="text-gray-300 hover:text-white"
+              href="/console/timeline"
+            >
+              Timeline
+            </a>
+            <a
+              class="text-gray-300 hover:text-white"
+              href="/console/consciousness"
+            >
+              Consciousness
+            </a>
+            <a
+              class="text-gray-300 hover:text-white"
+              href="/console/auto-prs"
+            >
+              Auto-PRs
+            </a>
+            <a
+              class="text-gray-300 hover:text-white"
+              href="/agents/org"
+            >
+              Agents
+            </a>
+            <a
+              class="text-gray-300 hover:text-white"
+              href="/audit"
+            >
+              Audit
+            </a>
+            <a
+              class="text-gray-300 hover:text-white"
+              href="/terminal"
+            >
+              Terminal
+            </a>
+            <a
+              class="text-gray-300 hover:text-white"
+              href="/canvas"
+            >
+              Canvas
+            </a>
+            <a
+              class="text-white font-semibold"
+              href="/panini"
+            >
+              Panini
+            </a>
+            <a
+              class="text-gray-300 hover:text-white"
+              href="/settings/keys"
+            >
+              Settings
+            </a>
+          </nav>
+        </div>
+        <div
+          class="flex items-center gap-3 text-xs"
+        >
+          <button
+            aria-pressed="true"
+            class="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs text-gray-200 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-brand-500 "
+            title="Switch to light"
+            type="button"
+          >
+            Theme: dark
+          </button>
+        </div>
+      </div>
+      <div
+        class="mt-2"
+      >
+        <div
+          class="flex items-center gap-3 text-xs"
+        >
+          <label
+            class="flex items-center gap-1"
+          >
+            <input
+              type="checkbox"
+            />
+            <span
+              class="text-gray-300"
+            >
+              Expert
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </header>
+</DocumentFragment>
+`;

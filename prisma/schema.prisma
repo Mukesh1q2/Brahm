@@ -1,0 +1,51 @@
+datasource db {
+  provider = env("DATABASE_PROVIDER")
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Conversation {
+  id         String   @id @default(uuid())
+  userId     String
+  title      String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  messages   Message[]
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String   // 'user' | 'assistant' | 'system'
+  content        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  meta           Json?
+}
+
+// Optional; can be inlined into Message.meta initially
+model MetadataBlob {
+  id             String   @id @default(uuid())
+  conversationId String
+  messageId      String?
+  kind           String   // 'reasoning' | 'diff' | 'json' | 'other'
+  payload        Json
+  encryptedAtRest Boolean  @default(false) // forward-compat flag; actual encryption introduced in Phase 2
+  createdAt      DateTime @default(now())
+}
+
+model Experience {
+  id             String   @id @default(uuid())
+  userId         String
+  timestamp      DateTime
+  main_content   String
+  phi_level      Float
+  qualia_count   Int
+  duration_ms    Int
+  createdAt      DateTime @default(now())
+}
+

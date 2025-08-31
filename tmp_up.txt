@@ -1,0 +1,41 @@
+  const updateParallax = useCallback((scrollY: number) => {
+    layers.forEach((layer) => {
+      const element = document.querySelector(layer.element);
+      if (!element) return;
+
+      const yPos = -(scrollY * layer.speed);
+      
+      // Base parallax transformation
+      let transform = `translate3d(0, ${yPos}px, 0)`;
+      
+      // Add spatial depth if enabled
+      if (spatialDepth && layer.depth !== undefined) {
+        transform = `translate3d(0, ${yPos}px, ${layer.depth}px)`;
+        
+        // Perspective scaling based on depth
+        const perspectiveScale = layer.scale || (1 + layer.depth * 0.0005);
+        transform += ` scale(${perspectiveScale})`;
+      }
+
+      // Quantum layer specific effects
+      if (layer.type === 'quantum-field') {
+        const quantumWave = Math.sin(scrollY * 0.005 + Date.now() * 0.001) * 20;
+        transform += ` rotateX(${scrollY * 0.01}deg) rotateY(${quantumWave * 0.1}deg)`;
+      } else if (layer.type === 'particle-system') {
+        const particleRotation = scrollY * 0.02 + consciousnessLevel * 10;
+        transform += ` rotateZ(${particleRotation}deg)`;
+      }
+
+      gsap.set(element, {
+        transform,
+        opacity: layer.opacity || 1,
+        filter: `blur(${(layer.blur || 0) + Math.abs(scrollY * 0.002)}px)`
+      });
+    });
+
+    // Apply quantum distortion
+    applyQuantumDistortion(scrollY, mousePositionRef.current.x, mousePositionRef.current.y);
+  }, [layers, spatialDepth, consciousnessLevel, applyQuantumDistortion]);
+
+  // Create depth effect with perspective
+  const createDepthEffect = useCallback(() => {

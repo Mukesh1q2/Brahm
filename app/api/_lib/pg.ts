@@ -1,0 +1,357 @@
+import crypto from "crypto";
+
+function randomId(): string {
+  try { return crypto.randomUUID(); } catch { return `${Date.now()}_${Math.random().toString(36).slice(2,10)}`; }
+}
+
+async function getClient() {
+  const dsn = process.env.PG_DSN || process.env.POSTGRES_DSN || process.env.DATABASE_URL;
+  if (!dsn) return null;
+  try {
+    // Lazy import pg only when needed
+    const modName = ['p','g'].join('');
+    const pg = await import(modName as any);
+    const { Client } = pg as any;
+    const client = new Client({ 
+      connectionString: dsn,
+      connectionTimeoutMillis: 5000, // 5 second timeout
+      query_timeout: 10000, // 10 second query timeout
+    });
+    await client.connect();
+    return client as import("pg").Client;
+  } catch (error: any) {
+    // Silently fail when database is not available to avoid blocking startup
+    console.warn('[PG] Database connection failed, continuing without persistence:', error?.message || String(error));
+    return null;
+  }
+}
+
+async function ensureTables(client: any) {
+  // Create simple tables if not present
+  const ddlDiary = `
+  CREATE TABLE IF NOT EXISTS diary_entries (
+    id text PRIMARY KEY,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    role text,
+    text text,
+    ts bigint,
+    message_id text
+  );`;
+  const ddlSemantic = `
+  CREATE TABLE IF NOT EXISTS semantic_memory (
+    id text PRIMARY KEY,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    text text NOT NULL,
+    labels jsonb,
+    ts bigint
+  );`;
+  const ddlEpisodes = `
+  CREATE TABLE IF NOT EXISTS episodes (
+    id text PRIMARY KEY,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    ts bigint,
+    main_content text,
+    phi_level numeric,
+    attention_strength numeric,
+    labels jsonb,
+    phenomenology jsonb,
+    significance numeric,
+    retrieval_count int DEFAULT 0,
+    last_accessed timestamptz DEFAULT now()
+  );`;
+  const ddlConsciousnessStates = `
+  CREATE TABLE IF NOT EXISTS consciousness_states (
+    id text PRIMARY KEY,
+    timestamp timestamptz NOT NULL DEFAULT now(),
+    phi_level numeric NOT NULL,
+    valence numeric,
+    coherence numeric,
+    session_id text,
+    raw_metrics jsonb
+  );`;
+  const ddlEpisodicMemories = `
+  CREATE TABLE IF NOT EXISTS episodic_memories (
+    id text PRIMARY KEY,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    experience_content text,
+    phenomenology jsonb,
+    emotional_coloring jsonb,
+    consciousness_level numeric,
+    significance_score numeric
+  );`;
+  const ddlEvolutionEvents = `
+  CREATE TABLE IF NOT EXISTS evolution_events (
+    id text PRIMARY KEY,
+    timestamp timestamptz NOT NULL DEFAULT now(),
+    evolution_type text,
+    before_state jsonb,
+    after_state jsonb,
+    success boolean,
+    impact_assessment jsonb
+  );`;
+  await client.query(ddlDiary);
+  await client.query(ddlSemantic);
+  await client.query(ddlEpisodes);
+  await client.query(ddlConsciousnessStates);
+  await client.query(ddlEpisodicMemories);
+  await client.query(ddlEvolutionEvents);
+  // Helpful indexes for filtering
+  try { await client.query('CREATE INDEX IF NOT EXISTS episodes_ts_idx ON episodes (ts)'); } catch {}
+  try { await client.query('CREATE INDEX IF NOT EXISTS episodes_phi_idx ON episodes (phi_level)'); } catch {}
+  try { await client.query('CREATE INDEX IF NOT EXISTS episodes_labels_gin ON episodes USING GIN (labels)'); } catch {}
+  try { await client.query('CREATE INDEX IF NOT EXISTS consciousness_states_ts_idx ON consciousness_states (timestamp)'); } catch {}
+  try { await client.query('CREATE INDEX IF NOT EXISTS consciousness_states_session_idx ON consciousness_states (session_id)'); } catch {}
+}
+
+export async function insertDiarySafe(body: any): Promise<boolean> {
+  const client = await getClient();
+  if (!client) return false;
+  try {
+    await ensureTables(client);
+    const id = randomId();
+    const role = String(body?.role || "user");
+    const text = String(body?.text || body?.summary || "");
+    const ts = Number(body?.ts || Date.now());
+    const messageId = body?.messageId ? String(body.messageId) : null;
+    await client.query(
+      `INSERT INTO diary_entries (id, role, text, ts, message_id) VALUES ($1,$2,$3,$4,$5)`,
+      [id, role, text, ts, messageId]
+    );
+    return true;
+  } catch {
+    return false;
+  } finally {
+    try { await client.end(); } catch {}
+  }
+}
+
+export async function insertSemanticSafe(body: any): Promise<boolean> {
+  const client = await getClient();
+  if (!client) return false;
+  try {
+    await ensureTables(client);
+    const id = randomId();
+    const text = String(body?.text || "");
+    const labels = body?.labels ?? [];
+    const ts = Number(body?.ts || Date.now());
+    await client.query(
+      `INSERT INTO semantic_memory (id, text, labels, ts) VALUES ($1,$2,$3::jsonb,$4)`,
+      [id, text, JSON.stringify(labels), ts]
+    );
+    return true;
+  } catch {
+    return false;
+  } finally {
+    try { await client.end(); } catch {}
+  }
+}
+
+export async function bootstrapPgSafe(): Promise<boolean> {
+  const client = await getClient();
+  if (!client) return false;
+  try {
+    await ensureTables(client);
+    return true;
+  } catch {
+    return false;
+  } finally {
+    try { await client.end(); } catch {}
+  }
+}
+
+export async function isPgAvailable(): Promise<boolean> {
+  const client = await getClient();
+  if (!client) return false;
+  try {
+    // quick round-trip query
+    await client.query('SELECT 1');
+    return true;
+  } catch {
+    return false;
+  } finally {
+    try { await client.end(); } catch {}
+  }
+}
+
+export async function listDiary(limit: number = 100): Promise<Array<{ id: string; ts: number; summary: string; episode_id: string|null }>> {
+  const client = await getClient();
+  if (!client) return [];
+  try {
+    await ensureTables(client);
+    const res = await client.query('SELECT id, text, ts FROM diary_entries ORDER BY created_at DESC LIMIT $1', [limit]);
+    const rows = Array.isArray(res?.rows) ? res.rows : [];
+    return rows.map((r: any) => ({ id: String(r.id), ts: Number(r.ts||Date.now()), summary: String(r.text||''), episode_id: null }));
+  } catch {
+    return [];
+  } finally { try { await client.end(); } catch {} }
+}
+
+export async function listSemantic(limit: number = 1000): Promise<Array<{ id: string; text: string; labels: any[]; ts: number|null }>> {
+  const client = await getClient();
+  if (!client) return [];
+  try {
+    await ensureTables(client);
+    const res = await client.query('SELECT id, text, labels, ts FROM semantic_memory ORDER BY created_at DESC LIMIT $1', [limit]);
+    const rows = Array.isArray(res?.rows) ? res.rows : [];
+    return rows.map((r:any)=> ({ id: String(r.id), text: String(r.text||''), labels: r.labels ?? [], ts: r.ts ? Number(r.ts) : null }));
+  } catch { return []; }
+  finally { try { await client.end(); } catch {} }
+}
+
+// insertEpisodeSafe (legacy signature) unified below
+
+export async function searchSemanticText(q: string, top: number = 10, labels?: string[]): Promise<Array<{ id: string; text: string; labels: any[]; ts: number|null; score: number }>> {
+  const client = await getClient();
+  if (!client) return [];
+  try {
+    await ensureTables(client);
+    const like = `%${q}%`;
+    let sql = 'SELECT id, text, labels, ts FROM semantic_memory WHERE text ILIKE $1';
+    const params: any[] = [like];
+    if (Array.isArray(labels) && labels.length) {
+      sql += ' AND labels @> $2::jsonb';
+      params.push(JSON.stringify(labels));
+    }
+    sql += ' ORDER BY created_at DESC LIMIT ' + Number(top || 10);
+    const res = await client.query(sql, params);
+    const rows = Array.isArray(res?.rows) ? res.rows : [];
+    return rows.map((r: any) => ({ id: String(r.id), text: String(r.text||''), labels: r.labels ?? [], ts: r.ts ? Number(r.ts) : null, score: 1.0 }));
+  } catch {
+    return [];
+  } finally { try { await client.end(); } catch {} }
+}
+
+export async function insertEpisodeSafe(ep: any): Promise<boolean> {
+  const client = await getClient();
+  if (!client) return false;
+  try {
+    await ensureTables(client);
+    const id = String(ep?.id || randomId());
+    const ts = Number(ep?.ts || ep?.timestamp || Date.now());
+    const main = String(ep?.main_content || ep?.experience?.main_content || '');
+    const phi = ep?.phi_level != null ? Number(ep.phi_level) : (ep?.experience?.phi_level != null ? Number(ep.experience.phi_level) : null);
+    const att = ep?.attention_strength != null ? Number(ep.attention_strength) : null;
+    const labels = ep?.labels ?? [];
+    const phenomenology = ep?.phenomenology ?? null;
+    const significance = ep?.significance != null ? Number(ep.significance) : null;
+    await client.query(
+      `INSERT INTO episodes (id, ts, main_content, phi_level, attention_strength, labels, phenomenology, significance)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8)
+       ON CONFLICT (id) DO NOTHING`,
+      [id, ts, main, phi, att, JSON.stringify(labels), phenomenology ? JSON.stringify(phenomenology) : null, significance]
+    );
+    return true;
+  } catch {
+    return false;
+  } finally { try { await client.end(); } catch {} }
+}
+
+export async function listEpisodes(opts?: { limit?: number; q?: string; since?: number; phi_min?: number; phi_max?: number; labels?: string[]; labelsMode?: 'and'|'or' }): Promise<any[]> {
+  const client = await getClient();
+  if (!client) return [];
+  try {
+    await ensureTables(client);
+    let sql = 'SELECT id, ts, main_content, phi_level, attention_strength, labels, phenomenology, significance FROM episodes';
+    const conds: string[] = [];
+    const params: any[] = [];
+    if (opts?.q) { params.push(`%${opts.q}%`); conds.push(`main_content ILIKE $${params.length}`); }
+    if (opts?.since) { params.push(Number(opts.since)); conds.push(`ts >= $${params.length}`); }
+    if (opts?.phi_min != null) { params.push(Number(opts.phi_min)); conds.push(`(phi_level IS NULL OR phi_level >= $${params.length})`); }
+    if (opts?.phi_max != null) { params.push(Number(opts.phi_max)); conds.push(`(phi_level IS NULL OR phi_level <= $${params.length})`); }
+    if (Array.isArray(opts?.labels) && opts!.labels!.length) {
+      if (opts?.labelsMode === 'or') {
+        // any overlap with provided labels
+        params.push(opts.labels);
+        conds.push(`labels ?| $${params.length}::text[]`);
+      } else {
+        // AND semantics (array contains all specified labels)
+        params.push(JSON.stringify(opts.labels));
+        conds.push(`labels @> $${params.length}::jsonb`);
+      }
+    }
+    if (conds.length) sql += ' WHERE ' + conds.join(' AND ');
+    sql += ' ORDER BY ts DESC NULLS LAST, created_at DESC';
+    const limit = Math.max(1, Math.min(500, Number(opts?.limit || 50)));
+    sql += ` LIMIT ${limit}`;
+    const res = await client.query(sql, params);
+    return Array.isArray(res?.rows) ? res.rows : [];
+  } catch { return []; }
+  finally { try { await client.end(); } catch {} }
+}
+
+export function getDsnInfoSafe(): { hasDsn: boolean; host: string|null; database: string|null; userMasked: string|null } {
+  try {
+    const dsn = process.env.PG_DSN || process.env.POSTGRES_DSN || process.env.DATABASE_URL || '';
+    if (!dsn) return { hasDsn: false, host: null, database: null, userMasked: null };
+    const u = new URL(dsn);
+    const user = u.username || '';
+    const masked = user ? (user[0] + '***') : null;
+    return { hasDsn: true, host: u.host || null, database: (u.pathname || '').replace(/^\//, '') || null, userMasked: masked };
+  } catch { return { hasDsn: false, host: null, database: null, userMasked: null }; }
+}
+
+export async function getStats(): Promise<{ diary_count: number; semantic_count: number; episode_count: number }> {
+  const client = await getClient();
+  if (!client) return { diary_count: 0, semantic_count: 0, episode_count: 0 };
+  try {
+    await ensureTables(client);
+    const d = await client.query('SELECT COUNT(*)::int AS c FROM diary_entries');
+    const s = await client.query('SELECT COUNT(*)::int AS c FROM semantic_memory');
+    const e = await client.query('SELECT COUNT(*)::int AS c FROM episodes');
+    return { diary_count: Number(d?.rows?.[0]?.c || 0), semantic_count: Number(s?.rows?.[0]?.c || 0), episode_count: Number(e?.rows?.[0]?.c || 0) };
+  } catch { return { diary_count: 0, semantic_count: 0, episode_count: 0 }; }
+  finally { try { await client.end(); } catch {} }
+}
+
+export async function listConsciousnessStates(limit: number = 100): Promise<Array<{ timestamp: string; phi_level: number; valence: number|null; coherence: number|null; session_id: string|null; raw_metrics: any }>> {
+  const client = await getClient();
+  if (!client) return [];
+  try {
+    await ensureTables(client);
+    const res = await client.query('SELECT timestamp, phi_level, valence, coherence, session_id, raw_metrics FROM consciousness_states ORDER BY timestamp DESC LIMIT $1', [limit]);
+    const rows = Array.isArray(res?.rows) ? res.rows : [];
+    return rows.map((r:any)=> ({ timestamp: new Date(r.timestamp).toISOString(), phi_level: Number(r.phi_level), valence: r.valence!=null ? Number(r.valence): null, coherence: r.coherence!=null ? Number(r.coherence): null, session_id: r.session_id || null, raw_metrics: r.raw_metrics || null }));
+  } catch {
+    return [];
+  } finally { try { await client.end(); } catch {} }
+}
+
+export async function insertConsciousnessStateSafe(state: { phi_level: number; valence?: number|null; coherence?: number|null; session_id?: string|null; raw_metrics?: any }): Promise<boolean> {
+  const client = await getClient();
+  if (!client) return false;
+  try {
+    await ensureTables(client);
+    const id = randomId();
+    const phi = Number(state?.phi_level || 0);
+    const val = state?.valence!=null ? Number(state.valence) : null;
+    const coh = state?.coherence!=null ? Number(state.coherence) : null;
+    const sid = state?.session_id ? String(state.session_id) : null;
+    const raw = state?.raw_metrics ? JSON.stringify(state.raw_metrics) : null;
+    await client.query(`INSERT INTO consciousness_states (id, phi_level, valence, coherence, session_id, raw_metrics) VALUES ($1,$2,$3,$4,$5,$6::jsonb)`, [id, phi, val, coh, sid, raw]);
+    return true;
+  } catch {
+    return false;
+  } finally { try { await client.end(); } catch {} }
+}
+
+export async function cleanupTable(opts: { table: 'diary'|'semantic'|'episodes'; olderThanDays?: number; keepLatest?: number }): Promise<{ deleted: number }> {
+  const client = await getClient();
+  if (!client) return { deleted: 0 };
+  try {
+    await ensureTables(client);
+    let deleted = 0;
+    if (opts.olderThanDays && opts.olderThanDays > 0) {
+      const tbl = opts.table === 'diary' ? 'diary_entries' : opts.table === 'semantic' ? 'semantic_memory' : 'episodes';
+      const res = await client.query(`DELETE FROM ${tbl} WHERE created_at < now() - ($1::int || ' days')::interval`, [opts.olderThanDays]);
+      deleted += Number(res?.rowCount || 0);
+    }
+    if (opts.keepLatest && opts.keepLatest > 0) {
+      const tbl = opts.table === 'diary' ? 'diary_entries' : opts.table === 'semantic' ? 'semantic_memory' : 'episodes';
+      const res = await client.query(`DELETE FROM ${tbl} WHERE id IN (SELECT id FROM ${tbl} ORDER BY created_at DESC OFFSET $1)`, [opts.keepLatest]);
+      deleted += Number(res?.rowCount || 0);
+    }
+    return { deleted };
+  } catch { return { deleted: 0 }; }
+  finally { try { await client.end(); } catch {} }
+}
+

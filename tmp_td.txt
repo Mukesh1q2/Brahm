@@ -1,0 +1,17 @@
+              {events.map((ev, idx) => (
+                <div key={idx} className="border border-white/10 rounded p-2">
+                  <div className="flex items-center justify-between text-[11px] text-white/60">
+                    <span>{new Date(ev.ts).toLocaleTimeString()} • {ev.type}</span>
+                    <span>{String(ev.detail?.status ?? '')}</span>
+                  </div>
+                  <pre className="mt-1 whitespace-pre-wrap text-white/80 overflow-auto">{JSON.stringify(ev.detail, null, 2)}</pre>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
